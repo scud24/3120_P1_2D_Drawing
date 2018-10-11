@@ -257,13 +257,16 @@ function drawObjects(gl, a_Position, u_FragColor) {
    // \todo draw quads
     
     // draw primitive creation vertices 
-    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Pnt);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_Position);
+    if (points.length !== 0)
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Pnt);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
+        gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_Position);
 
-    gl.uniform4f(u_FragColor, 1.0, 1.0, 1.0, 1.0);
-    gl.drawArrays(gl.POINTS, 0, points.length);    
+        gl.uniform4f(u_FragColor, 1.0, 1.0, 1.0, 1.0);
+        gl.drawArrays(gl.POINTS, 0, points.length);    
+    }
 }
 
 /**
