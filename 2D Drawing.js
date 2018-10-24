@@ -19,7 +19,6 @@ var draw_mode = {DrawLines: 0, DrawTriangles: 1, DrawQuads: 2, ClearScreen: 3, N
 var curr_draw_mode = draw_mode.DrawLines;
 
 // GL array buffers for points, lines, and triangles
-// \todo Student Note: need similar buffers for other draw modes...
 var vBuffer_Pnt, vBuffer_Line, vBuffer_Triangle, vBuffer_Quad, vBuffer_Select;
 
 // Array's storing 2D vertex coordinates of points, lines, triangles, etc.
