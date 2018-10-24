@@ -166,7 +166,36 @@ function main() {
                 curr_draw_mode = draw_mode.DrawLines;
             });
             
-    //\todo add event handlers for other buttons as required....            
+    //\todo add event handlers for other buttons as required....     
+	document.getElementById("DeleteButton").addEventListener(
+            "click",
+            function () {
+                if((selected_objects.length != 0) && (current_selection_index<selected_objects.length))
+				{
+					if(selected_objects[current_selection_index][0] == "line")
+					{
+						line_verts.splice(selected_objects[current_selection_index][0]*2,2);
+					}
+					else if(selected_objects[current_selection_index][0] == "triangle")
+					{
+						console.log("Pre-splice: " + tri_verts);
+						tri_verts.splice(selected_objects[current_selection_index][0]*3,3);
+						console.log("Post-splice: " + tri_verts);
+					}
+					else if(selected_objects[current_selection_index][0] == "quad")
+					{
+						quad_verts.splice(selected_objects[current_selection_index][0]*4,4);
+					}
+					else 
+					{
+						console.log("Error - selected object type: " + selected_objects[current_selection_index][0]);
+					}
+				}
+				selected_objects = [];
+				current_selection_index = 0;
+				selection_points = [];
+				drawObjects(gl,a_Position, u_FragColor);
+            });			
 
     // set event handlers for color sliders
     /* \todo right now these just output to the console, code needs to be modified... */
@@ -236,10 +265,10 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 			var p = new Vec2([x,y]);
 		
 			var dist = pointLineDist(p0,p1, p)
-			console.log ("Point line distance: " + dist);
+			//console.log ("Point line distance: " + dist);
 			if (dist < 0.02)
 			{
-				var new_object = ["line",[p0,p1]];
+				var new_object = ["line",[p0,p1],i];
 				new_selection.push(new_object);
 				console.log("Added " + new_object[0] + " to selected_objects");
 			}
@@ -256,7 +285,7 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 			console.log ("Baryentric coords: " + bary);
 			if( bary[0] > 0 && bary[1] > 0 && bary[2]>0)
 			{
-				var new_object = ["triangle",[tri_p0,tri_p1,tri_p2]];
+				var new_object = ["triangle",[tri_p0,tri_p1,tri_p2],i];
 				new_selection.push(new_object);
 				console.log("Added " + new_object[0] + " to selected_objects");
 			}
@@ -273,11 +302,11 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 		
 			var quad_bary1 = barycentric(quad_p0,quad_p1, quad_p2, quad_p);
 			var quad_bary2 = barycentric(quad_p0,quad_p2, quad_p3, quad_p);
-			console.log ("Quad bary 1 coords: " + quad_bary1);
-			console.log ("Quad bary 2 coords: " + quad_bary2);
+			//console.log ("Quad bary 1 coords: " + quad_bary1);
+			//console.log ("Quad bary 2 coords: " + quad_bary2);
 			if(( quad_bary1[0] > 0 && quad_bary1[1] > 0 && quad_bary1[2]>0)||( quad_bary2[0] > 0 && quad_bary2[1] > 0 && quad_bary2[2]>0))
 			{
-				var new_object = ["quad",[quad_p0,quad_p1,quad_p2,quad_p3]];
+				var new_object = ["quad",[quad_p0,quad_p1,quad_p2,quad_p3],i];
 				new_selection.push(new_object);
 				console.log("Added " + new_object[0] + " to selected_objects");
 			}
@@ -287,11 +316,17 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 		//todo: compare last selection to new selection
 		
 			//selected_objects = new_selection;
-		if(new_selection.length == selected_objects.length)
+			console.log("Start");
+			console.log(new_selection);
+			console.log(selected_objects);
+		
+		if(new_selection.length == selected_objects.length && new_selection.length != 0)
 		{
+
 			var difference_found = false;
 			for(i = 0; i < new_selection.length; i++)
 			{
+				console.log("loop1");
 				if(new_selection[i][0] != selected_objects[i][0]){
 					console.log("Difference found at " + i);
 					console.log("NS: " + new_selection[i][0] + " SO: " + selected_objects[i][0]);
@@ -304,30 +339,44 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 					difference_found = true;
 					}
 					else{
+								console.log("loop2: " + new_selection[i][1])
 						for(j = 0; j < new_selection[i][1].length; j++)
 						{
-							for(k = 0; k < new_selection[i][1][j].length; k++)
+								console.log("loop3: " +new_selection[i][1][j])								
+								console.log(new_selection[i][1][j])
+							for(k = 0; k < new_selection[i][1][j].array.length; k++)
 							{
-							if(new_selection[i][1][j][k] != selected_objects[i][1][j][k]){						
+								console.log("loop4: " +new_selection[i][1][j].array[k])
+							if(new_selection[i][1][j].array[k] != selected_objects[i][1][j].array[k]){						
 								console.log("Difference found at " + i);
 								console.log("NS: " + new_selection[i][1][j].array + " SO: " + selected_objects[i][1][j].array);
 								difference_found = true;
+							}
+							else{
+								console.log("Same?");
+								console.log(selected_objects[i][1][j][k])
+								console.log(new_selection[i][1][j][k])
 							}
 							}
 						}
 					}
 				}
 			}
-			if(!difference_found)
+			if((!difference_found) &&(new_selection.length!= 0))
 			{
 			console.log("selections match");
 			current_selection_index++;
-				if(current_selection_index >= new_selection.length)
+			
+			console.log("Current index" + current_selection_index + " length: " + selected_objects.length);
+				if(current_selection_index >= selected_objects.length)
 				{
 					current_selection_index = 0;
 				}
+			console.log("Current index" + current_selection_index + " length: " + selected_objects.length);
+				
 			}
 			else{
+			selected_objects = [];
 			for(i = 0; i < new_selection.length; i++)
 			{
 					selected_objects[i]=new_selection[i]
@@ -336,6 +385,7 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 			}
 		}
 		else{
+			selected_objects = [];
 			for(i = 0; i < new_selection.length; i++)
 			{
 				if(new_selection[i] != selected_objects[i]){
@@ -349,9 +399,12 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 			selection_points = [];
 			for(i=0; i < selected_object[1].length;i++){			
 			selection_points.push([selected_object[1][i].array[0],selected_object[1][i].array[1]]);
-			console.log("pushing point: " + selected_object[1][i].array);
+			//console.log("pushing point: " + selected_object[1][i].array);
 			}
 			console.log("selected_object: " +selected_object[0] + ": " + selected_object[1][1].array + " points: " + selection_points.length);
+		}
+		else{
+			selection_points = [];
 		}
 	}
 	else{
@@ -477,12 +530,12 @@ function drawObjects(gl, a_Position, u_FragColor) {
     }
     
     // draw primitive creation vertices 
-	console.log("normal points: " + points.length);
+	//console.log("normal points: " + points.length);
     if (points.length !== 0)
     {
 		for(i = 0; i < points.length; i++)
 		{
-			console.log("Normal point: " + points[i]);
+			//console.log("Normal point: " + points[i]);
 		}
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Pnt);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
@@ -500,7 +553,7 @@ function drawObjects(gl, a_Position, u_FragColor) {
     {
 		for(i = 0; i < selection_points.length; i++)
 		{
-			console.log("Selection point: " + selection_points[i]);
+			//console.log("Selection point: " + selection_points[i]);
 		}
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Select);
         gl.bufferData(gl.ARRAY_BUFFER, flatten(selection_points), gl.STATIC_DRAW);
