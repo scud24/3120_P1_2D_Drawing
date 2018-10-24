@@ -348,7 +348,6 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 			}
 			current_selection_index = 0;
 		}
-		//todo: set selection points to selected object vertices
 		if(selected_objects.length != 0){
 			var selected_object = selected_objects[current_selection_index];
 			selection_points = [];
