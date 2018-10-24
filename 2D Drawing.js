@@ -13,24 +13,27 @@
 
 // 'draw_mode' are names of the different user interaction modes.
 // \todo Student Note: others are probably needed...
-var draw_mode = {DrawLines: 0, DrawTriangles: 1, ClearScreen: 2, None: 3};
+var draw_mode = {DrawLines: 0, DrawTriangles: 1, DrawQuads: 2, ClearScreen: 3, None: 4};
 
 // 'curr_draw_mode' tracks the active user interaction mode
 var curr_draw_mode = draw_mode.DrawLines;
 
 // GL array buffers for points, lines, and triangles
 // \todo Student Note: need similar buffers for other draw modes...
-var vBuffer_Pnt, vBuffer_Line;
+var vBuffer_Pnt, vBuffer_Line, vBuffer_Triangle, vBuffer_Quad;
 
 // Array's storing 2D vertex coordinates of points, lines, triangles, etc.
 // Each array element is an array of size 2 storing the x,y coordinate.
 // \todo Student Note: need similar arrays for other draw modes...
-var points = [], line_verts = [], tri_verts = [];
+var points = [], line_verts = [], tri_verts = [], quad_verts = [];
 
 // count number of points clicked for new line
 var num_pts_line = 0;
 
-// \todo need similar counters for other draw modes...
+//count points clicked for triangles
+var num_pts_tri = 0;
+//count points clicked for quads
+var num_pts_quad = 0;
 
 
 /*****
@@ -81,7 +84,17 @@ function main() {
         document.getElementById("App_Title").innerHTML += "-Skeleton";
     }
 
-    // \todo create buffers for triangles and quads...
+    //create buffers for triangles and quads...
+	vBuffer_Triangle = gl.createBuffer();
+    if (!vBuffer_Line) {
+        console.log('Failed to create the buffer object');
+        return -1;
+    }
+	vBuffer_Quad = gl.createBuffer();
+    if (!vBuffer_Line) {
+        console.log('Failed to create the buffer object');
+        return -1;
+    }
 
     // Specify the color for clearing <canvas>
     gl.clearColor(0, 0, 0, 1);
@@ -119,7 +132,14 @@ function main() {
             "click",
             function () {
                 curr_draw_mode = draw_mode.DrawTriangles;
-            });    
+            });   
+
+
+    document.getElementById("QuadButton").addEventListener(
+            "click",
+            function () {
+                curr_draw_mode = draw_mode.DrawQuads;
+            });   			
     
     document.getElementById("ClearScreenButton").addEventListener(
             "click",
@@ -132,6 +152,8 @@ function main() {
                     line_verts.pop();
                 while (tri_verts.length > 0)
                     tri_verts.pop();
+				while (quad_verts.length > 0)
+                    quad_verts.pop();
 
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 
@@ -220,6 +242,34 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
                 points.length = 0;
             }
             break;
+		case draw_mode.DrawTriangles:
+            // in tri drawing mode, so draw tris
+            if (num_pts_tri < 2) {			
+                // gathering points of new tri, so collect points
+                tri_verts.push([x, y]);
+                num_pts_tri++;
+            }
+            else {						
+                // got final point of new tri, so update the primitive arrays
+                tri_verts.push([x, y]);
+                num_pts_tri = 0;
+                points.length = 0;
+            }
+            break;
+		case draw_mode.DrawQuads:
+            // in quad drawing mode, so draw quads
+            if (num_pts_quad < 3) {			
+                // gathering points of new quad, so collect points
+                quad_verts.push([x, y]);
+                num_pts_quad++;
+            }
+            else {						
+                // got final point of new quad, so update the primitive arrays
+                quad_verts.push([x, y]);
+                num_pts_quad = 0;
+                points.length = 0;
+            }
+            break;
     }
     
     drawObjects(gl,a_Position, u_FragColor);
@@ -251,10 +301,38 @@ function drawObjects(gl, a_Position, u_FragColor) {
         // draw the lines
         gl.drawArrays(gl.LINES, 0, line_verts.length );
     }
+	
+	
 
-   // \todo draw triangles
+   //draw triangles
+    if (tri_verts.length) {	
+        // enable the line vertex
+        gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Triangle);
+        // set vertex data into buffer (inefficient)
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(tri_verts), gl.STATIC_DRAW);
+        // share location with shader
+        gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_Position);
+
+        gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 1.0);
+        // draw the tris
+        gl.drawArrays(gl.TRIANGLES, 0, tri_verts.length );
+    }
    
-   // \todo draw quads
+   //draw quads
+    if (quad_verts.length) {	
+        // enable the line vertex
+        gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Quad);
+        // set vertex data into buffer (inefficient)
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(quad_verts), gl.STATIC_DRAW);
+        // share location with shader
+        gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_Position);
+
+        gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 1.0);
+        // draw the quads
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, quad_verts.length );
+    }
     
     // draw primitive creation vertices 
     if (points.length !== 0)
