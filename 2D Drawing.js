@@ -331,7 +331,12 @@ function drawObjects(gl, a_Position, u_FragColor) {
 
         gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 1.0);
         // draw the quads
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, quad_verts.length );
+		var i = 0;
+		while(i < quad_verts.length / 4){
+				
+        gl.drawArrays(gl.TRIANGLE_FAN, i*4, 4 );
+		i++;
+		}
     }
     
     // draw primitive creation vertices 
