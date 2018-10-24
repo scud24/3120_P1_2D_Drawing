@@ -38,8 +38,6 @@ var num_pts_quad = 0;
 var selected_objects =[];
 var current_selection_index = 0;
 
-// \todo Student Note: others are probably needed...
-var selection_type = {line: 0, triangle: 1, quad: 2};
 
 /*****
  * 
