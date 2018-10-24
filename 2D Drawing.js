@@ -24,7 +24,6 @@ var vBuffer_Pnt, vBuffer_Line, vBuffer_Triangle, vBuffer_Quad, vBuffer_Select;
 
 // Array's storing 2D vertex coordinates of points, lines, triangles, etc.
 // Each array element is an array of size 2 storing the x,y coordinate.
-// \todo Student Note: need similar arrays for other draw modes...
 var points = [], line_verts = [], tri_verts = [], quad_verts = [], selection_points =[];
 
 // count number of points clicked for new line
