@@ -198,101 +198,6 @@ function barycentric (p0, p1, p2, p)
 	outA = pDistA/p2DistA;
 	outB = pDistB/p0DistB;
 	outG = pDistG/p1DistG;
-	
-	/*
-	var detMatrix = new Mat2();
-	var d = 0;
-	//Line p0->p1
-	detMatrix.set(0,0, p1.array[0]-p0.array[0]);
-	detMatrix.set(1,0, p1.array[1]-p0.array[1]);
-	detMatrix.set(0,1, p0.array[0]-p.array[0]);
-	detMatrix.set(1,1, p0.array[0]-p.array[0]);
-	d = detMatrix.det();
-	
-	var p1_minus_p0 = new Vec2([p1.array[0],p1.array[1]]);
-	p1_minus_p0.sub(p0); 
-	var pDistA = p1_minus_p0.mag();
-	
-	
-	//Line p1->p2
-	detMatrix.set(0,0, p2.array[0]-p1.array[0]);
-	detMatrix.set(1,0, p2.array[1]-p1.array[1]);
-	detMatrix.set(0,1, p1.array[0]-p.array[0]);
-	detMatrix.set(1,1, p1.array[0]-p.array[0]);
-	d = detMatrix.det();
-	
-	var p2_minus_p1 = new Vec2([p2.array[0],p2.array[1]]);
-	p2_minus_p1.sub(p1); 
-	var pDistB = p2_minus_p1.mag();
-	
-	
-	//Line p2->p0
-	detMatrix.set(0,0, p0.array[0]-p2.array[0]);
-	detMatrix.set(1,0, p0.array[1]-p2.array[1]);
-	detMatrix.set(0,1, p2.array[0]-p.array[0]);
-	detMatrix.set(1,1, p2.array[0]-p.array[0]);
-	d = detMatrix.det();
-	
-	
-	var p0_minus_p2 = new Vec2([p0.array[0],p0.array[1]]);
-	p0_minus_p2.sub(p1); 
-	var pDistC = p0_minus_p2.mag();
-	
-	*/
-	/*
-	
-	var tempA =new Vec2([p.array[0],p.array[1]]);
-	tempA.sub(p0);
-	var tA = mA.dot(tempA);
-	tA = tA / mA.dot(mA);
-    mA.array[0] *= tA;
-	mA.array[1] *= tA;
-	mA.add(p0);
-	var doutA = new Vec2([p.array[0],p.array[1]]);
-	doutA.sub(mA);
-	
-	
-	var tempdA =new Vec2([p2.array[0],p2.array[1]]);
-	tempdA.sub(p0);
-	var tdA = mdA.dot(tempdA);
-	tA = tdA / mdA.dot(mdA);
-    mdA.array[0] *= tdA;
-	mdA.array[1] *= tdA;
-	mdA.add(p0);
-	var dA = new Vec2([p2.array[0],p2.array[1]]);
-	dA.sub(mdA);
-	console.log("DoutA: " + doutA.array);
-	console.log("DA: " + dA.array);
-	
-	outA = (doutA.mag() / dA.mag());
-		 
-		 
-	var mB = new Vec2([p2.array[0],p2.array[1]]);
-	mB.sub(p1);	
-	var tempB =new Vec2([p.array[0],p.array[1]]);
-	tempB.sub(p0);
-	var tB = mB.dot(tempB);
-	tB = tB / mB.dot(mB);
-    mB.array[0] *= tB;
-	mB.array[1] *= tB;
-	mB.add(p0);
-	var outB = new Vec2([p.array[0],p.array[1]]);
-	outB.sub(mB);
-	
-		
-	var mG = new Vec2([p0.array[0],p0.array[1]]);
-	mG.sub(p2);		 
-	var tempG =new Vec2([p.array[0],p.array[1]]);
-	tempG.sub(p0);
-	var tG = mG.dot(tempG);
-	tG = tG / mG.dot(mG);
-    mG.array[0] *= tG;
-	mG.array[1] *= tG;
-	mG.add(p0);
-	var outG = new Vec2([p.array[0],p.array[1]]);
-	outG.sub(mG);
-	
-	*/
 	  
     return [outA,outB,outG];
 }
@@ -312,14 +217,11 @@ function baryLineDist(vA,vB,vP)
 	detMatrix.set(1,0, vB.array[1]-vA.array[1]);
 	detMatrix.set(0,1, vA.array[0]-vP.array[0]);
 	detMatrix.set(1,1, vA.array[1]-vP.array[1]);
-	//console.log("Matrix: " + detMatrix.array);
 	d = detMatrix.det();
-	//console.log("Det: " + d);
 	
 	var B_minus_A = new Vec2([vB.array[0],vB.array[1]]);
 	B_minus_A.sub(vA); 
 	var dist = d/B_minus_A.mag();
-	//console.log("baryLineDist: " + dist);
 	return dist;
 }
 /**
@@ -331,58 +233,31 @@ function baryLineDist(vA,vB,vP)
  */
 function pointLineDist(p0,p1,p)
 {
-     /*
-     * \todo needs to be implemented
-     */ 
-//console.log("start p: " + p.array[0] + ", " + p.array[1]);
 var m = new Vec2(p1);
-//console.log("start p0: " + p0.array[0] + ", " + p0.array[1]);
-//console.log("start p1: " + p1.array[0] + ", " + p1.array[1]);
-//m = p1;
-//console.log("step 1 m: " + m.array[0] + ", " + m.array[1]);
 m.sub(p0);	 
-//console.log("step 2 m: " + m.array[0] + ", " + m.array[1]);
 var temp =new Vec2(p);
-//temp= p;
-//console.log("step 1 temp: " + temp.array[0] + ", " + temp.array[1]);
 temp.sub(p0);
-//console.log("step 2 temp: " + temp.array[0] + ", " + temp.array[1]);
 
 var t = m.dot(temp);
-//console.log("step 1 t: " + t);
 t = t / m.dot(m);
-//console.log("step 2 t: " + t);
 
 if(t<=0)
 {
-//console.log("m*t: " + m.array[0] + ", " + m.array[1]);
-//console.log("step final-1 p0 (t<=0): " + p0.array[0] + ", " + p0.array[1]);
-//console.log("step final-1 p (t<=0): " + p.array[0] + ", " + p.array[1]);
 p.sub(p0);
-//console.log("step final p (t<=0): " + p.array[0] + ", " + p.array[1]);
 return p.mag();
 }
 else if(t>1)
 {
-//console.log("m*t: " + m.array[0] + ", " + m.array[1]);
-//console.log("step final-1 p (t<=0): " + p.array[0] + ", " + p.array[1]);
 p.sub(p1);
-//console.log("step final-1 p1 (t<=0): " + p1.array[0] + ", " + p1.array[1]);
-//console.log("step final-1 p0 (t<=0): " + p0.array[0] + ", " + p0.array[1]);
-	//console.log("step final p (t>1): " + p.array[0] + ", " + p.array[1]);
 	return p.mag();
 }	
 else
 {
 	m.array[0] *= t;
 	m.array[1] *= t;
-//console.log("m*t: " + m.array[0] + ", " + m.array[1]);
-	p0.add(m);
-//console.log("p0+(m*t): " + p0.array[0] + ", " + p0.array[1]);
-//console.log("p1 final: " + p1.array[0] + ", " + p1.array[1]);
-	//console.log("step final-1 p (0<t<1): " + p.array[0] + ", " + p.array[1]);
-	p.sub(p0);
-	//console.log("step final p (0<t<1): " + p.array[0] + ", " + p.array[1]);
+	var temp2 = new Vec2(p0);
+	temp2.add(m);
+	p.sub(temp2);
 	return p.mag();
 }
 }
