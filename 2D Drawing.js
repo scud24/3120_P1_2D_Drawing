@@ -24,7 +24,8 @@ var vBuffer_Pnt, vBuffer_Line, vBuffer_Triangle, vBuffer_Quad, vBuffer_Select;
 // Array's storing 2D vertex coordinates of points, lines, triangles, etc.
 // Each array element is an array of size 2 storing the x,y coordinate.
 var points = [], line_verts = [], tri_verts = [], quad_verts = [], selection_points =[];
-
+var line_colors = [], tri_colors=[], quad_colors=[];
+var current_color= [0.0,1.0,0.0,1.0];
 // count number of points clicked for new line
 var num_pts_line = 0;
 
@@ -36,6 +37,7 @@ var num_pts_quad = 0;
 var selected_objects =[];
 var current_selection_index = 0;
 
+var gl_last, a_Position_last, u_FragColor_last, canvas_last;
 
 /*****
  * 
@@ -175,16 +177,19 @@ function main() {
 					if(selected_objects[current_selection_index][0] == "line")
 					{
 						line_verts.splice(selected_objects[current_selection_index][0]*2,2);
+						line_colors.splice(selected_objects[current_selection_index][0],1);
 					}
 					else if(selected_objects[current_selection_index][0] == "triangle")
 					{
 						console.log("Pre-splice: " + tri_verts);
 						tri_verts.splice(selected_objects[current_selection_index][0]*3,3);
+						tri_colors.splice(selected_objects[current_selection_index][0],1);
 						console.log("Post-splice: " + tri_verts);
 					}
 					else if(selected_objects[current_selection_index][0] == "quad")
 					{
 						quad_verts.splice(selected_objects[current_selection_index][0]*4,4);
+						quad_colors.splice(selected_objects[current_selection_index][0],1);
 					}
 					else 
 					{
@@ -203,16 +208,22 @@ function main() {
             "input",
             function () {
                 console.log("RedRange:" + document.getElementById("RedRange").value);
+				current_color[0] = document.getElementById("RedRange").value/100.0;
+				updateSelectedObjectColor();				
             });
     document.getElementById("GreenRange").addEventListener(
             "input",
             function () {
                 console.log("GreenRange:" + document.getElementById("GreenRange").value);
+				current_color[1] = document.getElementById("GreenRange").value/100.0;
+				updateSelectedObjectColor();		
             });
     document.getElementById("BlueRange").addEventListener(
             "input",
             function () {
                 console.log("BlueRange:" + document.getElementById("BlueRange").value);
+				current_color[2] =document.getElementById("BlueRange").value/100.0;
+				updateSelectedObjectColor();		
             });                        
             
     // init sliders 
@@ -235,6 +246,30 @@ function main() {
  * 
  *****/
 
+ /*
+ * sets current selected object's color to current_color
+ */
+ function updateSelectedObjectColor(){
+	 if((selected_objects.length != 0) && (current_selection_index<selected_objects.length))
+				{
+					if(selected_objects[current_selection_index][0] == "line")
+					{
+						line_colors[selected_objects[current_selection_index][2]] = [current_color[0],current_color[1], current_color[2],1]
+					}
+					else if(selected_objects[current_selection_index][0] == "triangle")
+					{
+						tri_colors[selected_objects[current_selection_index][2]] = [current_color[0],current_color[1], current_color[2],1]
+					}
+					else if(selected_objects[current_selection_index][0] == "quad")
+					{
+						quad_colors[selected_objects[current_selection_index][2]]= [current_color[0],current_color[1], current_color[2],1]
+					}
+				}	 
+		if(gl_last){
+			drawObjects(gl_last,a_Position_last, u_FragColor_last);
+		}
+ }
+ 
 /*
  * Handle mouse button press event.
  * 
@@ -246,7 +281,11 @@ function main() {
  * @returns {undefined}
  */
 function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
-    var x = ev.clientX; // x coordinate of a mouse pointer
+    gl_last = gl;
+	canvas_last = canvas;
+	a_Position_last = a_Position;
+	u_FragColor_last = u_FragColor;
+	var x = ev.clientX; // x coordinate of a mouse pointer
     var y = ev.clientY; // y coordinate of a mouse pointer
     var rect = ev.target.getBoundingClientRect();
     
@@ -408,7 +447,7 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 		}
 	}
 	else{
-
+		//-----------------------------ADD Points/Shapes------------------
 		if (curr_draw_mode !== draw_mode.None) {
 			// add clicked point to 'points'
 			points.push([x, y]);
@@ -426,6 +465,7 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 				else {						
 					// got final point of new line, so update the primitive arrays
 					line_verts.push([x, y]);
+					line_colors.push([current_color[0],current_color[1], current_color[2],1]);
 					num_pts_line = 0;
 					points.length = 0;
 				}
@@ -440,6 +480,7 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 				else {						
 					// got final point of new tri, so update the primitive arrays
 					tri_verts.push([x, y]);
+					tri_colors.push([current_color[0],current_color[1], current_color[2],1]);
 					num_pts_tri = 0;
 					points.length = 0;
 				}
@@ -454,6 +495,7 @@ function handleMouseDown(ev, gl, canvas, a_Position, u_FragColor) {
 				else {						
 					// got final point of new quad, so update the primitive arrays
 					quad_verts.push([x, y]);
+					quad_colors.push([current_color[0],current_color[1], current_color[2],1]);
 					num_pts_quad = 0;
 					points.length = 0;
 				}
@@ -476,9 +518,9 @@ function drawObjects(gl, a_Position, u_FragColor) {
 
     // Clear <canvas>
     gl.clear(gl.COLOR_BUFFER_BIT);
-
+	var i=0
     // draw lines
-    if (line_verts.length) {	
+    if (line_verts.length>1) {	
         // enable the line vertex
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Line);
         // set vertex data into buffer (inefficient)
@@ -487,15 +529,19 @@ function drawObjects(gl, a_Position, u_FragColor) {
         gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Position);
 
-        gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 1.0);
+		
+		while(i<Math.floor(line_verts.length/2)){
+        gl.uniform4f(u_FragColor, line_colors[i][0], line_colors[i][1], line_colors[i][2],  line_colors[i][3]);
         // draw the lines
-        gl.drawArrays(gl.LINES, 0, line_verts.length );
+        gl.drawArrays(gl.LINES, i*2, 2 );
+		i++;
+		}
     }
 	
 	
-
+	console.log("current color: " + current_color);
    //draw triangles
-    if (tri_verts.length) {	
+    if (tri_verts.length>2) {	
         // enable the line vertex
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Triangle);
         // set vertex data into buffer (inefficient)
@@ -504,13 +550,18 @@ function drawObjects(gl, a_Position, u_FragColor) {
         gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Position);
 
-        gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 1.0);
+		i=0;
+		while(i<Math.floor(tri_verts.length/3)){
+		console.log("tri colors[" + i +"]: " + tri_colors[i]);
+        gl.uniform4f(u_FragColor, tri_colors[i][0], tri_colors[i][1], tri_colors[i][2], tri_colors[i][3]);
         // draw the tris
-        gl.drawArrays(gl.TRIANGLES, 0, tri_verts.length );
+        gl.drawArrays(gl.TRIANGLES, i*3, 3);
+		i++;
+		}
     }
    
    //draw quads
-    if (quad_verts.length) {	
+    if (quad_verts.length>3) {	
         // enable the line vertex
         gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer_Quad);
         // set vertex data into buffer (inefficient)
@@ -519,11 +570,11 @@ function drawObjects(gl, a_Position, u_FragColor) {
         gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Position);
 
-        gl.uniform4f(u_FragColor, 0.0, 1.0, 0.0, 1.0);
         // draw the quads
-		var i = 0;
-		while(i < quad_verts.length / 4){
+		i=0;
+		while(i<Math.floor(quad_verts.length/4)){
 				
+        gl.uniform4f(u_FragColor, quad_colors[i][0], quad_colors[i][1], quad_colors[i][2], quad_colors[i][3]);
         gl.drawArrays(gl.TRIANGLE_FAN, i*4, 4 );
 		i++;
 		}
